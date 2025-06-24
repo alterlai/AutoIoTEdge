@@ -1,6 +1,6 @@
 ﻿using Microsoft.Azure.Devices.Shared;
 
-namespace TestApp.Extensions
+namespace ExampleApp.Extensions
 {
 	public static class TwinCollectionExtensions
 	{

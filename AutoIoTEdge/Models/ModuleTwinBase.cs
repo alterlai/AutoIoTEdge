@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace AutoIoTEdge.Models;
 
-public abstract class ModelTwinBase : IModuleTwin
+public abstract class ModuleTwinBase : IModuleTwin
 {
         /// <summary>
         /// Populates the twin properties from a TwinCollection using reflection.

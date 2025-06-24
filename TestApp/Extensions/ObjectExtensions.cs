@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.ComponentModel;
 
-namespace TestApp.Extensions
+namespace ExampleApp.Extensions
 {
 	public static class ObjectExtensions
 	{

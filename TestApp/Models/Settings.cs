@@ -1,4 +1,4 @@
-﻿namespace TestApp.Models;
+﻿namespace ExampleApp.Models;
 /// <summary>
 /// General settings that are not in the module twin.
 /// </summary>

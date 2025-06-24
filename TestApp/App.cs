@@ -1,15 +1,24 @@
-﻿using Microsoft.Extensions.Logging;
-using TestApp.Models;
-using TestApp.Services.IoT;
+﻿using AutoIoTEdge;
+using AutoIoTEdge.Interfaces;
+using ExampleApp.Models;
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.Extensions.Logging;
 
-namespace TestApp;
-public class App(IIotEdgeService iotEdgeService, ILogger<App> _logger)
+namespace ExampleApp;
+public class App(IotEdgeService<ModuleTwin> edgeService, ILogger<App> _logger)
 {
 	public async Task RunAsync()
 	{
-		var twin = iotEdgeService.GetTwin();
+		var twin = edgeService.Twin;
+		edgeService.ModuleTwinUpdated += OnTwinUpdated;
+
 
 		Console.WriteLine("EventHubReceiver is running...");
+
+	}
+	private void OnTwinUpdated(object sender, ModuleTwin twin)
+	{
+		// Handle twin update
 
 	}
 }

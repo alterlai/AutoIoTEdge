@@ -5,7 +5,7 @@ VisualStudioVersion = 17.14.36127.28 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoIoTEdge", "AutoIoTEdge\AutoIoTEdge.csproj", "{D16CD8D2-915E-4CCF-8361-EFBE108B382E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp", "TestApp\TestApp.csproj", "{52676A47-2585-416F-84EC-5F48969C13CD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleApp", "TestApp\ExampleApp.csproj", "{52676A47-2585-416F-84EC-5F48969C13CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
