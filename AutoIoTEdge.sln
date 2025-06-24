@@ -3,7 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36127.28 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoIoTEdge", "AutoIoTEdge\AutoIoTEdge.csproj", "{D16CD8D2-915E-4CCF-8361-EFBE108B382E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp", "TestApp\TestApp.csproj", "{52676A47-2585-416F-84EC-5F48969C13CD}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D16CD8D2-915E-4CCF-8361-EFBE108B382E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D16CD8D2-915E-4CCF-8361-EFBE108B382E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D16CD8D2-915E-4CCF-8361-EFBE108B382E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D16CD8D2-915E-4CCF-8361-EFBE108B382E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52676A47-2585-416F-84EC-5F48969C13CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52676A47-2585-416F-84EC-5F48969C13CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52676A47-2585-416F-84EC-5F48969C13CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52676A47-2585-416F-84EC-5F48969C13CD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
