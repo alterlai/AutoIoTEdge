@@ -1,6 +1,6 @@
 ﻿using Microsoft.Azure.Devices.Shared;
 
-namespace ExampleApp.Extensions
+namespace AutoIoTEdge.Extensions
 {
 	public static class TwinCollectionExtensions
 	{

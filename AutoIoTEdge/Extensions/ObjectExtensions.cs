@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.ComponentModel;
 
-namespace ExampleApp.Extensions
+namespace AutoIoTEdge.Extensions
 {
 	public static class ObjectExtensions
 	{

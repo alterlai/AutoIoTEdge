@@ -1,7 +1,7 @@
 using AutoIoTEdge.Interfaces;
 using AutoIoTEdge.Models;
-using EventHubReceiver.Services.IoT;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -10,12 +10,12 @@ using Newtonsoft.Json;
 using System.Text;
 using System.Text.Unicode;
 
-namespace AutoIoTEdge;
+namespace AutoIoTEdge.Services;
 public class IotEdgeService<TTwin> : IIotEdgeService<TTwin>, IHostedService where TTwin : ModuleTwinBase, new()
 {
-    private readonly ILogger _logger;
-    private readonly IModuleClient _moduleClient;
-    private readonly IConfiguration? _configuration;
+    private readonly ILogger<IotEdgeService<TTwin>> _logger;
+    private readonly IConfiguration _configuration;
+    private ModuleClient _moduleClient;
     private TTwin _twin = new();
     private bool _isDevelopment;
 
@@ -24,22 +24,26 @@ public class IotEdgeService<TTwin> : IIotEdgeService<TTwin>, IHostedService wher
     public bool IsConnected { get; private set; }
     public TTwin Twin => _twin;
 
-    public IotEdgeService(ILogger<IotEdgeService<TTwin>> logger, IModuleClient moduleClient, IConfiguration? configuration = null)
+    public IotEdgeService(ILogger<IotEdgeService<TTwin>> logger, IConfiguration configuration)
     {
         _logger = logger;
-        _moduleClient = moduleClient;
         _configuration = configuration;
         _isDevelopment = configuration?["ASPNETCORE_ENVIRONMENT"] == "Development";
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+        // Create the ModuleClient here
+        var mqttSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
+        ITransportSettings[] settings = { mqttSetting };
+        _moduleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
+
         await StartInternalAsync();
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        // Cleanup if needed
+        _moduleClient?.Dispose();
         return Task.CompletedTask;
     }
 
@@ -92,11 +96,6 @@ public class IotEdgeService<TTwin> : IIotEdgeService<TTwin>, IHostedService wher
         await _moduleClient.UpdateReportedPropertiesAsync(_twin.ToTwinCollection());
         OnModuleTwinUpdated();
     }
-
-	public TTwin GetTwin()
-	{
-        return _twin;
-	}
 
 	public Task SendEventAsync(string outputName, string message)
 	{
