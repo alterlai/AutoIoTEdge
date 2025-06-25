@@ -1,12 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk;Microsoft.NET.Sdk.Publish">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>1.0.0</Version>
-    <Authors>YourName</Authors>
-    <Company>YourCompany</Company>
+    <Version>0.1.1</Version>
+    <Authors>Jeroen van der Laan</Authors>
+    <Company>ALTEN</Company>
     <Description>Reusable IoT Edge scaffolding for .NET projects.</Description>
     <PackageTags>iot;edge;azure;module</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

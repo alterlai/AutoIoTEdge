@@ -11,7 +11,7 @@ using System.Text;
 using System.Text.Unicode;
 
 namespace AutoIoTEdge.Services;
-public class IotEdgeService<TTwin> : IIotEdgeService<TTwin>, IHostedService where TTwin : ModuleTwinBase, new()
+public class IotEdgeService<TTwin> : IIotEdgeService<TTwin> where TTwin : ModuleTwinBase, new()
 {
     private readonly ILogger<IotEdgeService<TTwin>> _logger;
     private readonly IConfiguration _configuration;
@@ -29,17 +29,9 @@ public class IotEdgeService<TTwin> : IIotEdgeService<TTwin>, IHostedService wher
         _logger = logger;
         _configuration = configuration;
         _isDevelopment = configuration?["ASPNETCORE_ENVIRONMENT"] == "Development";
-    }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
-    {
-        // Create the ModuleClient here
-        var mqttSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
-        ITransportSettings[] settings = { mqttSetting };
-        _moduleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
-
-        await StartInternalAsync();
-    }
+        StartInternalAsync().GetAwaiter().GetResult(); // Synchronous call to ensure the client is initialized before any method calls
+	}
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
@@ -49,7 +41,12 @@ public class IotEdgeService<TTwin> : IIotEdgeService<TTwin>, IHostedService wher
 
     private async Task StartInternalAsync()
     {
-        _moduleClient.SetConnectionStatusChangesHandler((status, reason) =>
+		// Create the ModuleClient here
+		var mqttSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
+		ITransportSettings[] settings = { mqttSetting };
+		_moduleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
+
+		_moduleClient.SetConnectionStatusChangesHandler((status, reason) =>
         {
             _logger.LogWarning($"{DateTime.UtcNow}: Connection changed: Status: {status} Reason: {reason}");
             IsConnected = status == ConnectionStatus.Connected;

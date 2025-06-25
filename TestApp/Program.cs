@@ -26,7 +26,6 @@ public class Program
 		}
 		else
 		{
-			builder.Services.AddHostedService<IotEdgeService<ModuleTwin>>();
 			builder.Services.AddSingleton<IIotEdgeService<ModuleTwin>>(sp => sp.GetRequiredService<IotEdgeService<ModuleTwin>>());
 		}
 
