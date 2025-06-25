@@ -20,15 +20,15 @@ public class Program
 		var isDevelopment = builder.Environment.IsDevelopment();
 
 		if (isDevelopment)
-{
-    builder.Services.Configure<ModuleTwin>(builder.Configuration.GetSection("ModuleTwin"));
-    builder.Services.AddSingleton<IIotEdgeService<ModuleTwin>, DummyIotService<ModuleTwin>>();
-}
-else
-{
-    builder.Services.AddHostedService<IotEdgeService<ModuleTwin>>();
-    builder.Services.AddSingleton<IIotEdgeService<ModuleTwin>>(sp => sp.GetRequiredService<IotEdgeService<ModuleTwin>>());
-}
+		{
+			builder.Services.Configure<ModuleTwin>(builder.Configuration.GetSection("ModuleTwin"));
+			builder.Services.AddSingleton<IIotEdgeService<ModuleTwin>, DummyIotService<ModuleTwin>>();
+		}
+		else
+		{
+			builder.Services.AddHostedService<IotEdgeService<ModuleTwin>>();
+			builder.Services.AddSingleton<IIotEdgeService<ModuleTwin>>(sp => sp.GetRequiredService<IotEdgeService<ModuleTwin>>());
+		}
 
 		builder.Services.AddSingleton<App>();
 
