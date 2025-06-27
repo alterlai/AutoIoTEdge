@@ -7,10 +7,13 @@
     <Version>0.1.2</Version>
     <Authors>Jeroen van der Laan</Authors>
     <Company>ALTEN</Company>
-    <Description>Reusable IoT Edge scaffolding for .NET projects.</Description>
+    <Description>Reusable IoT Edge scaffolding for .NET projects. 
+	
+	View the README at https://github.com/alterlai/AutoIoTEdge
+    </Description>
     <PackageTags>iot;edge;azure;module</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/your/repo</RepositoryUrl>
+    <RepositoryUrl>https://github.com/alterlai/AutoIoTEdge</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
