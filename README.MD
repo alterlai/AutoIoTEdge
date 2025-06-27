@@ -8,6 +8,11 @@ This repository contains code for the IoT Edge boilerplate library. The goal of 
 - Provides the same functionality as the IoT Edge device library.
 - Provides an event subscription for module twin updates.
 
+### Environments
+Environment is determined based on the `DOTNET_ENVIRONMENT` variable. If the variable is set to `Development`, 
+the library will use a dummy service that reads the module twin from a JSON file. Otherwise, 
+it will use the IoT Edge service to read the module twin from the IoT Edge device.
+
 # Installation
 1. Install this library using NuGet with
 ```bash

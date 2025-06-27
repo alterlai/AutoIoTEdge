@@ -1,15 +1,15 @@
 ﻿using AutoIoTEdge.Interfaces;
 using AutoIoTEdge.Services;
-using ExampleApp.Models;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SampleModule.Models;
 
 
-namespace ExampleApp;
+namespace SampleModule;
 
 public class Program
 {
@@ -19,6 +19,7 @@ public class Program
 
 		var isDevelopment = builder.Environment.IsDevelopment();
 
+		// Register the services based on the environment
 		if (isDevelopment)
 		{
 			builder.Services.Configure<ModuleTwin>(builder.Configuration.GetSection("ModuleTwin"));

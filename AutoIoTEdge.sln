@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36127.28
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleApp", "TestApp\ExampleApp.csproj", "{52676A47-2585-416F-84EC-5F48969C13CD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleModule", "TestApp\SampleModule.csproj", "{52676A47-2585-416F-84EC-5F48969C13CD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoIoTEdge", "AutoIoTEdge\AutoIoTEdge.csproj", "{11882C97-AE9F-5327-0746-0DBF5EE1EE76}"
 EndProject
