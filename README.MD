@@ -110,7 +110,23 @@ public class MyService
 
 ```
 
+In case you still want to use the base ModuleClient, you can call the `GetBaseModuleClient()` method on the IIoTEdgeService:
+```csharp
+public class MyService
+{
+	private readonly IIotEdgeService<ModuleTwin> _iotEdgeService;
 
+	public MyService(IIotEdgeService<ModuleTwin> iotEdgeService)
+	{
+		_iotEdgeService = iotEdgeService;
+	}
+	public async Task DoSomethingWithBaseClientAsync()
+	{
+		var client = await _iotEdgeService.GetBaseModuleClient();
+		// Use the base ModuleClient as needed
+	}
+}
+```
 
 
 # How to update
