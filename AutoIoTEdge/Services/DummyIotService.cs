@@ -1,4 +1,5 @@
 ﻿using AutoIoTEdge;
+using AutoIoTEdge.Interfaces;
 using AutoIoTEdge.Models;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Extensions.Logging;
@@ -24,6 +25,12 @@ namespace AutoIoTEdge.Services
 			_twin = twin.Value;
 			_logger = logger;
 		}
+
+		public ModuleClient GetBaseModuleClient()
+		{
+			throw new NotImplementedException("DummyIotService does not support ModuleClient operations.");
+		}
+
 
 		public Task SendEventAsync(string outputName, string message)
 		{

@@ -17,7 +17,6 @@ public class IotEdgeService<TTwin> : IIotEdgeService<TTwin> where TTwin : Module
     private readonly IConfiguration _configuration;
     private ModuleClient _moduleClient;
     private TTwin _twin = new();
-    private bool _isDevelopment;
 
     public event EventHandler<TTwin>? ModuleTwinUpdated;
 
@@ -28,7 +27,6 @@ public class IotEdgeService<TTwin> : IIotEdgeService<TTwin> where TTwin : Module
     {
         _logger = logger;
         _configuration = configuration;
-        _isDevelopment = configuration?["ASPNETCORE_ENVIRONMENT"] == "Development";
 
         StartInternalAsync().GetAwaiter().GetResult(); // Synchronous call to ensure the client is initialized before any method calls
 	}
@@ -39,6 +37,15 @@ public class IotEdgeService<TTwin> : IIotEdgeService<TTwin> where TTwin : Module
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Initializes and starts the internal module client, setting up connection handlers, desired property update
+    /// callbacks,  and loading the module twin configuration.
+    /// </summary>
+    /// <remarks>This method creates a module client using MQTT transport settings and establishes a
+    /// connection to the IoT Hub.  It sets up a connection status change handler to monitor connectivity and updates
+    /// the module twin configuration  either from the cloud or from local appsettings.json in a development
+    /// environment.</remarks>
+    /// <returns>A task that represents the asynchronous operation of starting the module client.</returns>
     private async Task StartInternalAsync()
     {
 		// Create the ModuleClient here
@@ -54,23 +61,22 @@ public class IotEdgeService<TTwin> : IIotEdgeService<TTwin> where TTwin : Module
 
         await _moduleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdate, null);
         await _moduleClient.OpenAsync();
+        await UpdateTwinFromCloud();
+		OnModuleTwinUpdated();
+	}
 
-        if (_isDevelopment && _configuration != null)
-        {
-            _logger.LogInformation("Development environment detected. Loading twin from appsettings.json.");
-            _twin = new TTwin();
-            _twin.UpdateFromConfiguration(_configuration.GetSection("ModuleTwin"));
-            OnModuleTwinUpdated();
-        }
-        else
-        {
-            await UpdateTwinFromCloud();
-        }
-    }
-
+    /// <summary>
+    /// Handles updates to the desired properties of the module twin.
+    /// </summary>
+    /// <remarks>This method processes the desired properties update by applying the changes to the internal
+    /// twin representation and reporting the updated properties back to the IoT Hub. It also triggers any necessary
+    /// actions based on the updated twin state.</remarks>
+    /// <param name="desiredProperties">The collection of desired properties received from the IoT Hub.</param>
+    /// <param name="userContext">An optional user-defined context object associated with the operation. Can be <see langword="null"/>.</param>
+    /// <returns></returns>
     private async Task OnDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
     {
-        _logger.LogInformation($"{DateTime.UtcNow}: Desired properties update received.");
+        _logger.LogInformation($"{DateTime.UtcNow}: Desired properties update received: {desiredProperties}");
         _twin = new TTwin();
         _twin.UpdateFromTwin(desiredProperties);
 
@@ -80,11 +86,25 @@ public class IotEdgeService<TTwin> : IIotEdgeService<TTwin> where TTwin : Module
         OnModuleTwinUpdated();
     }
 
+    /// <summary>
+    /// Handles the event triggered when the module twin is updated.
+    /// </summary>
+    /// <remarks>This method invokes the <see cref="ModuleTwinUpdated"/> event, passing the current instance 
+    /// and the updated module twin as arguments. Ensure that any subscribers to the event are properly  registered to
+    /// handle the updated twin data.</remarks>
     private void OnModuleTwinUpdated()
     {
         ModuleTwinUpdated?.Invoke(this, _twin);
     }
 
+    /// <summary>
+    /// Updates the module's twin by retrieving the desired properties from the cloud and synchronizing the reported
+    /// properties accordingly.
+    /// </summary>
+    /// <remarks>This method retrieves the latest desired properties from the cloud, updates the local twin
+    /// representation, and reports the updated properties back to the cloud. It also triggers the <see
+    /// cref="OnModuleTwinUpdated"/> event to notify that the module twin has been updated.</remarks>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task UpdateTwinFromCloud()
     {
         var twin = await _moduleClient.GetTwinAsync();
@@ -98,6 +118,11 @@ public class IotEdgeService<TTwin> : IIotEdgeService<TTwin> where TTwin : Module
 	{
 		Message messageBytes = new(Encoding.UTF8.GetBytes(message));
 		return SendEventAsync(outputName, messageBytes);
+	}
+
+    public ModuleClient GetBaseModuleClient()
+    {
+        return _moduleClient;
 	}
 
 	// Expose IoT Edge features

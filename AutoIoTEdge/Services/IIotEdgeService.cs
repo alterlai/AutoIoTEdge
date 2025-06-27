@@ -1,4 +1,5 @@
-﻿using AutoIoTEdge.Models;
+﻿using AutoIoTEdge.Interfaces;
+using AutoIoTEdge.Models;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
 
@@ -15,6 +16,7 @@ namespace AutoIoTEdge.Services
 		public Task SetMethodHandlerAsync(string methodname, MethodCallback methodCallback, object userContext);
 		public Task<MethodResponse> InvokeMethodAsync(string deviceId, MethodRequest methodRequest, CancellationToken cancellationToken);
 		public Task<MethodResponse> InvokeMethodAsync(string deviceId, MethodRequest methodRequest);
+		public ModuleClient GetBaseModuleClient();
 
 	}
 }

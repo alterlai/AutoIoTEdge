@@ -11,14 +11,17 @@ public abstract class ModuleTwinBase : IModuleTwin
         /// </summary>
         public void UpdateFromTwin(TwinCollection collection)
         {
-            foreach (var prop in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            foreach (var prop in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static))
             {
                 if (collection.Contains(prop.Name) && prop.CanWrite)
                 {
                     var value = collection[prop.Name];
                     if (value != null)
                     {
-                        prop.SetValue(this, Convert.ChangeType(value, prop.PropertyType));
+                        // Check if the property is static by examining its getter method
+                        var isStatic = prop.GetMethod?.IsStatic == true;
+                        var instance = isStatic ? null : this;
+                        prop.SetValue(instance, Convert.ChangeType(value, prop.PropertyType));
                     }
                 }
             }
@@ -29,12 +32,15 @@ public abstract class ModuleTwinBase : IModuleTwin
         /// </summary>
         public void UpdateFromConfiguration(IConfiguration config)
         {
-            foreach (var prop in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            foreach (var prop in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static))
             {
                 var value = config[prop.Name];
                 if (value != null && prop.CanWrite)
                 {
-                    prop.SetValue(this, Convert.ChangeType(value, prop.PropertyType));
+                    // Check if the property is static by examining its getter method
+                    var isStatic = prop.GetMethod?.IsStatic == true;
+                    var instance = isStatic ? null : this;
+                    prop.SetValue(instance, Convert.ChangeType(value, prop.PropertyType));
                 }
             }
         }
@@ -45,9 +51,12 @@ public abstract class ModuleTwinBase : IModuleTwin
         public TwinCollection ToTwinCollection()
         {
             var collection = new TwinCollection();
-            foreach (var prop in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            foreach (var prop in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static))
             {
-                collection[prop.Name] = prop.GetValue(this);
+                // Check if the property is static by examining its getter method
+                var isStatic = prop.GetMethod?.IsStatic == true;
+                var instance = isStatic ? null : this;
+                collection[prop.Name] = prop.GetValue(instance);
             }
             return collection;
         }
