@@ -8,7 +8,7 @@ This repository contains code for the IoT Edge boilerplate library. The goal of 
 - Provides the same functionality as the IoT Edge device library.
 - Provides an event subscription for module twin updates.
 
-# How to use
+# Installation
 1. Install this library using NuGet with
 ```bash
 dotnet add package AutoIoTEdge
@@ -33,25 +33,7 @@ dotnet add package AutoIoTEdge
 ... Other code...
 ```
 
-3. Use the service in your code by injecting it into your classes:
-```csharp
-
-public class MyService
-{
-	private readonly IIotEdgeService<ModuleTwin> _iotEdgeService;
-	public MyService(IIotEdgeService<ModuleTwin> iotEdgeService)
-	{
-		_iotEdgeService = iotEdgeService;
-	}
-	public async Task DoSomethingAsync()
-	{
-		var twin = await _iotEdgeService.GetModuleTwinAsync();
-		// Do something with the twin
-	}
-}
-```
-
-4. Automatically construct your module twin by extending the `ModuleTwinBase` class. The variable names that match module
+3. Automatically construct your module twin by extending the `ModuleTwinBase` class. The variable names that match module
 twin settings will be set accordingly. 
 
 ```csharp
@@ -66,7 +48,7 @@ Your Module Twin in the azure portal should look like:
 {
 	"properties": {
 		"desired": {
-			"TestVariable": "DefaultString"
+			"TestVariable": "NewValue"
 		}
 	}
 }
@@ -78,10 +60,52 @@ will overwrite values in `appsettings.json`. The JSON file should look like this
 ```json
 {
 	"ModuleTwin": {
-		"TestVariable": "DefaultString"
+		"TestVariable": "NewValue"
 	}
 }
 ```
+
+# Usage
+Use the service in your code by injecting it into your classes:
+```csharp
+
+public class MyService
+{
+	private readonly IIotEdgeService<ModuleTwin> _iotEdgeService;
+	public MyService(IIotEdgeService<ModuleTwin> iotEdgeService)
+	{
+		_iotEdgeService = iotEdgeService;
+	}
+	public async Task DoSomethingAsync()
+	{
+		var twin = await _iotEdgeService.GetModuleTwinAsync();
+		// Do something with the twin
+		
+		// Or in case of static variables, you can access them directly
+		Console.WriteLine(ModuleTwin.TestVariable);
+	}
+}
+```
+
+Respond to module twin updates by subscribing to the `ModuleTwinUpdated` event in your code:
+```csharp
+public class MyService
+{
+	private readonly IIotEdgeService<ModuleTwin> _iotEdgeService;
+	public MyService(IIotEdgeService<ModuleTwin> iotEdgeService)
+	{
+		_iotEdgeService = iotEdgeService;
+		_iotEdgeService.ModuleTwinUpdated += OnModuleTwinUpdated;
+	}
+	private void OnModuleTwinUpdated(object sender, ModuleTwin twin)
+	{
+		Console.WriteLine($"Module twin updated: {twin.TestVariable}");
+	}
+}
+
+```
+
+
 
 
 # How to update
