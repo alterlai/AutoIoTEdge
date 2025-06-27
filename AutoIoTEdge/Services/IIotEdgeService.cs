@@ -1,7 +1,5 @@
-﻿using AutoIoTEdge.Interfaces;
-using AutoIoTEdge.Models;
+﻿using AutoIoTEdge.Models;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Shared;
 
 namespace AutoIoTEdge.Services
 {

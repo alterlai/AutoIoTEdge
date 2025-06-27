@@ -1,10 +1,7 @@
-﻿using AutoIoTEdge;
-using AutoIoTEdge.Interfaces;
-using AutoIoTEdge.Models;
+﻿using AutoIoTEdge.Models;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using System.Text;
 
 namespace AutoIoTEdge.Services
@@ -12,8 +9,8 @@ namespace AutoIoTEdge.Services
 	/// <summary>
 	/// Dummy implementation of the IIotEdgeService interface voor local debugging.
 	/// </summary>
-	public class DummyIotService<TTwin> : IIotEdgeService<TTwin> 
-		where TTwin :ModuleTwinBase 
+	public class DummyIotService<TTwin> : IIotEdgeService<TTwin>
+		where TTwin : ModuleTwinBase
 	{
 		private TTwin _twin = null!;
 		private ILogger _logger = null!;
@@ -46,20 +43,20 @@ namespace AutoIoTEdge.Services
 
 		public Task SendEventAsync(string outputName, Message message)
 		{
-			string content = message.GetBytes() != null ? 
-				Encoding.UTF8.GetString(message.GetBytes()) : 
+			string content = message.GetBytes() != null ?
+				Encoding.UTF8.GetString(message.GetBytes()) :
 				"<empty>";
-			
+
 			_logger.LogInformation($"DummyIotService: Sending message to output {outputName}. Content: {content}");
 			return Task.CompletedTask;
 		}
 
 		public Task SendEventAsync(string outputName, Message message, CancellationToken cancellationToken)
 		{
-			string content = message.GetBytes() != null ? 
-				Encoding.UTF8.GetString(message.GetBytes()) : 
+			string content = message.GetBytes() != null ?
+				Encoding.UTF8.GetString(message.GetBytes()) :
 				"<empty>";
-				
+
 			_logger.LogInformation($"DummyIotService: Sending message to output {outputName} with cancellation token. Content: {content}");
 			return Task.CompletedTask;
 		}
