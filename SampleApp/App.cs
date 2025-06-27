@@ -14,6 +14,8 @@ public class App(IIotEdgeService<ModuleTwin> edgeService, ILogger<App> _logger)
 		edgeService.ModuleTwinUpdated += OnTwinUpdated;
 
 		_logger.LogInformation($"{ModuleTwin.TestVariable}");
+		_logger.LogInformation($"{DateTime.UtcNow}: {ModuleTwin.Position.Latitude}");
+		_logger.LogInformation($"{DateTime.UtcNow}: {ModuleTwin.Position.Longitude}");
 
 	}
 
