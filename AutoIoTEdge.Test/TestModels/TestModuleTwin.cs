@@ -10,6 +10,9 @@ public class TestModuleTwin : ModuleTwinBase
     public bool BoolProperty { get; set; } = true;
     public DateTime DateTimeProperty { get; set; } = DateTime.MinValue;
     
+    // List of strings property for testing list parsing
+    public List<string> StringListProperty { get; set; } = new List<string> { "Default1", "Default2" };
+    
     // Read-only property to test that it's not updated
     public string ReadOnlyProperty { get; } = "ReadOnly";
     

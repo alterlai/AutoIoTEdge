@@ -2,6 +2,7 @@ using AutoIoTEdge.Test.TestModels;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Configuration;
 using Moq;
+using Newtonsoft.Json.Linq;
 
 namespace AutoIoTEdge.Test;
 
@@ -150,6 +151,53 @@ public class ModuleTwinBaseTests
 
         // Act & Assert
         Assert.Throws<FormatException>(() => _testTwin.UpdateFromTwin(twinCollection));
+    }
+
+    [Test]
+    public void UpdateFromTwin_WithStringListAsJsonArray_ParsesCorrectly()
+    {
+        // Arrange
+        var twinCollection = new TwinCollection();
+        var jsonArray = new JArray { "item1", "item2", "item3" };
+        twinCollection["StringListProperty"] = jsonArray;
+
+        // Act
+        _testTwin.UpdateFromTwin(twinCollection);
+
+        // Assert
+        Assert.That(_testTwin.StringListProperty, Is.Not.Null);
+        Assert.That(_testTwin.StringListProperty.Count, Is.EqualTo(3));
+        Assert.That(_testTwin.StringListProperty[0], Is.EqualTo("item1"));
+        Assert.That(_testTwin.StringListProperty[1], Is.EqualTo("item2"));
+        Assert.That(_testTwin.StringListProperty[2], Is.EqualTo("item3"));
+    }
+
+    [Test]
+    public void UpdateFromTwin_WithStringListAsJsonString_ParsesCorrectly()
+    {
+        // Arrange
+        var twinCollection = new TwinCollection();
+        var jsonString = "[\"value1\", \"value2\", \"value with spaces\", \"value,with,commas\"]";
+        twinCollection["StringListProperty"] = jsonString;
+
+        // Get the original list to compare
+        var originalList = _testTwin.StringListProperty;
+        Console.WriteLine($"Original list count: {originalList.Count}");
+
+        // Act
+        _testTwin.UpdateFromTwin(twinCollection);
+
+        // Debug output
+        Console.WriteLine($"After update list count: {_testTwin.StringListProperty.Count}");
+        Console.WriteLine($"List contents: [{string.Join(", ", _testTwin.StringListProperty.Select(x => $"\"{x}\""))}]");
+
+        // Assert
+        Assert.That(_testTwin.StringListProperty, Is.Not.Null);
+        Assert.That(_testTwin.StringListProperty.Count, Is.EqualTo(4));
+        Assert.That(_testTwin.StringListProperty[0], Is.EqualTo("value1"));
+        Assert.That(_testTwin.StringListProperty[1], Is.EqualTo("value2"));
+        Assert.That(_testTwin.StringListProperty[2], Is.EqualTo("value with spaces"));
+        Assert.That(_testTwin.StringListProperty[3], Is.EqualTo("value,with,commas"));
     }
 
     #endregion
@@ -377,12 +425,12 @@ public class ModuleTwinBaseTests
         var resultTwinCollection = _testTwin.ToTwinCollection();
 
         // Assert
-        Assert.That(resultTwinCollection["StringProperty"], Is.EqualTo("RoundTripString"));
-        Assert.That(resultTwinCollection["IntProperty"], Is.EqualTo(777));
-        Assert.That(resultTwinCollection["DoubleProperty"], Is.EqualTo(7.77));
-        Assert.That(resultTwinCollection["BoolProperty"], Is.EqualTo(true));
-        Assert.That(resultTwinCollection["DateTimeProperty"], Is.EqualTo(new DateTime(2024, 3, 15)));
-        Assert.That(resultTwinCollection["StaticProperty"], Is.EqualTo("RoundTripStatic"));
+        Assert.That(resultTwinCollection["StringProperty"].Value, Is.EqualTo("RoundTripString"));
+        Assert.That(resultTwinCollection["IntProperty"].Value, Is.EqualTo(777));
+        Assert.That(resultTwinCollection["DoubleProperty"].Value, Is.EqualTo(7.77));
+        Assert.That(resultTwinCollection["BoolProperty"].Value, Is.EqualTo(true));
+        Assert.That(resultTwinCollection["DateTimeProperty"].Value, Is.EqualTo(new DateTime(2024, 3, 15)));
+        Assert.That(resultTwinCollection["StaticProperty"].Value, Is.EqualTo("RoundTripStatic"));
     }
 
     [Test]
