@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoIoTEdge.Test", "AutoIoTEdge.Test\AutoIoTEdge.Test.csproj", "{126407EC-680E-4AD2-96F1-66690A255CC7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleModule", "SampleApp\SampleModule.csproj", "{88C1843A-6EB0-6416-7C1C-5F7B46E3D215}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +28,10 @@ Global
 		{126407EC-680E-4AD2-96F1-66690A255CC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{126407EC-680E-4AD2-96F1-66690A255CC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{126407EC-680E-4AD2-96F1-66690A255CC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88C1843A-6EB0-6416-7C1C-5F7B46E3D215}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88C1843A-6EB0-6416-7C1C-5F7B46E3D215}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88C1843A-6EB0-6416-7C1C-5F7B46E3D215}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88C1843A-6EB0-6416-7C1C-5F7B46E3D215}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
