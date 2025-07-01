@@ -52,6 +52,12 @@ public abstract class ModuleTwinBase
 			Console.WriteLine("Value is JArray");
 			return jArray.ToObject<List<string>>() ?? new List<string>();
 		}
+
+		/// If the value is packed in a jValue, extract the string.
+		if(value is JValue jValue)
+		{
+			value = jValue.Value ?? "";
+		}
 		
 		// Handle string case (JSON string)
 		if (value is string stringValue)
