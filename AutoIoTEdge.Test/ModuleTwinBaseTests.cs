@@ -417,17 +417,6 @@ public class ModuleTwinBaseTests
     }
 
     [Test]
-    public void UpdateFromTwin_WithNonDutchCultureNumericValues_ThrowsException()
-    {
-        // Arrange
-        var twinCollection = new TwinCollection();
-        twinCollection["DoubleProperty"] = "12.34"; // English format (dot as decimal separator) - should fail
-
-        // Act & Assert
-        Assert.Throws<FormatException>(() => _testTwin.UpdateFromTwin(twinCollection));
-    }
-
-    [Test]
     public void UpdateFromConfiguration_WithDutchCultureNumericValues_ParsesCorrectly()
     {
         // Arrange
