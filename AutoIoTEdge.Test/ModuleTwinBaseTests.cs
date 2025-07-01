@@ -180,16 +180,8 @@ public class ModuleTwinBaseTests
         var jsonString = "[\"value1\", \"value2\", \"value with spaces\", \"value,with,commas\"]";
         twinCollection["StringListProperty"] = jsonString;
 
-        // Get the original list to compare
-        var originalList = _testTwin.StringListProperty;
-        Console.WriteLine($"Original list count: {originalList.Count}");
-
         // Act
         _testTwin.UpdateFromTwin(twinCollection);
-
-        // Debug output
-        Console.WriteLine($"After update list count: {_testTwin.StringListProperty.Count}");
-        Console.WriteLine($"List contents: [{string.Join(", ", _testTwin.StringListProperty.Select(x => $"\"{x}\""))}]");
 
         // Assert
         Assert.That(_testTwin.StringListProperty, Is.Not.Null);
@@ -402,6 +394,59 @@ public class ModuleTwinBaseTests
         // Assert
         Assert.That(twinCollection1, Is.Not.SameAs(twinCollection2));
         Assert.That(twinCollection1["StringProperty"], Is.EqualTo(twinCollection2["StringProperty"]));
+    }
+
+    #endregion
+
+    #region Culture Tests
+
+    [Test]
+    public void UpdateFromTwin_WithDutchCultureNumericValues_ParsesCorrectly()
+    {
+        // Arrange
+        var twinCollection = new TwinCollection();
+        twinCollection["DoubleProperty"] = "3,14"; // Dutch format - should be 3.14
+        twinCollection["IntProperty"] = "1234"; // Should work with both cultures
+
+        // Act
+        _testTwin.UpdateFromTwin(twinCollection);
+
+        // Assert
+        Assert.That(_testTwin.DoubleProperty, Is.EqualTo(3.14));
+        Assert.That(_testTwin.IntProperty, Is.EqualTo(1234));
+    }
+
+    [Test]
+    public void UpdateFromTwin_WithNonDutchCultureNumericValues_ThrowsException()
+    {
+        // Arrange
+        var twinCollection = new TwinCollection();
+        twinCollection["DoubleProperty"] = "12.34"; // English format (dot as decimal separator) - should fail
+
+        // Act & Assert
+        Assert.Throws<FormatException>(() => _testTwin.UpdateFromTwin(twinCollection));
+    }
+
+    [Test]
+    public void UpdateFromConfiguration_WithDutchCultureNumericValues_ParsesCorrectly()
+    {
+        // Arrange
+        var configData = new Dictionary<string, string>
+        {
+            {"DoubleProperty", "15,67"}, // Dutch format
+            {"IntProperty", "9876"}
+        };
+
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(configData)
+            .Build();
+
+        // Act
+        _testTwin.UpdateFromConfiguration(config);
+
+        // Assert
+        Assert.That(_testTwin.DoubleProperty, Is.EqualTo(15.67));
+        Assert.That(_testTwin.IntProperty, Is.EqualTo(9876));
     }
 
     #endregion
