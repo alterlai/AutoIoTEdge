@@ -63,6 +63,22 @@ public abstract class ModuleTwinBase
 		{
 			value = jValue.Value ?? "";
 		}
+		else if (value is JObject jObject)
+		{
+			// If the target type is a class or interface, deserialize the JObject
+			if (!targetType.IsPrimitive && targetType != typeof(string))
+			{
+				return jObject.ToObject(targetType);
+			}
+		}
+		else if (value is JArray jArray)
+		{
+			// If the target type is a collection, deserialize the JArray
+			if (typeof(System.Collections.IEnumerable).IsAssignableFrom(targetType) && targetType != typeof(string))
+			{
+				return jArray.ToObject(targetType);
+			}
+		}
 
 		// For numeric types, use culture-aware conversion
 		if (IsNumericType(targetType) && value is string stringValue)
