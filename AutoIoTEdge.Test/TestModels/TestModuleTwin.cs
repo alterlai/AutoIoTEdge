@@ -22,11 +22,7 @@ public class TestModuleTwin : ModuleTwinBase
     // Static property to test that it's not included
     public static string StaticProperty { get; set; } = "Static";
 
-    public static TestEnum Option { get; set
-        {
-            field = value + 1;
-        }
-    }
+    public static TestEnum Option { get; set; }
 
 }
 
