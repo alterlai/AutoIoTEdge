@@ -36,7 +36,7 @@ jobs:
       run: dotnet build AutoIoTEdge/AutoIoTEdge.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-restore
 
     - name: Test
-      run: dotnet test AutoIoTEdge.sln --configuration Release --no-build
+      run: dotnet test AutoIoTEdge.sln --configuration Release
 
     - name: Pack
       run: dotnet pack AutoIoTEdge/AutoIoTEdge.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-build --output ./dist
