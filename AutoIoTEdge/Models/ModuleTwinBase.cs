@@ -15,6 +15,21 @@ public abstract class ModuleTwinBase
 	private static readonly CultureInfo DutchCulture = new CultureInfo("nl-NL");
 
 	/// <summary>
+	/// Checks if the specified type is a numeric type.
+	/// </summary>
+	private static readonly HashSet<Type> NumericTypes = new()
+	{
+		typeof(int), typeof(long), typeof(short), typeof(byte),
+		typeof(uint), typeof(ulong), typeof(ushort), typeof(sbyte),
+		typeof(double), typeof(float), typeof(decimal)
+	};
+
+	private bool IsNumericType(Type type)
+	{
+		return NumericTypes.Contains(type);
+	}
+
+	/// <summary>
 	/// Populates the twin properties from a TwinCollection using reflection.
 	/// </summary>
 	public void UpdateFromTwin(TwinCollection collection)
@@ -38,7 +53,7 @@ public abstract class ModuleTwinBase
 					}
 					else
 					{
-						var convertedValue = ConvertWithCulture(value, prop.PropertyType);
+						var convertedValue = ParseWithCulture(value, prop.PropertyType);
 						prop.SetValue(instance, convertedValue);
 					}
 				}
@@ -49,8 +64,10 @@ public abstract class ModuleTwinBase
 	/// <summary>
 	/// Converts a value to the specified type using culture-aware conversion for numeric types.
 	/// </summary>
-	private object ConvertWithCulture(object value, Type targetType)
+	private object ParseWithCulture(object value, Type targetType)
 	{
+		string stringValue = value as string ?? value?.ToString() ?? "";
+
 		// Handle nullable types
 		var underlyingType = Nullable.GetUnderlyingType(targetType);
 		if (underlyingType != null)
@@ -80,8 +97,18 @@ public abstract class ModuleTwinBase
 			}
 		}
 
+		// Handle Enum types
+		if (targetType.IsEnum)
+		{
+			if (value is string && !int.TryParse(stringValue, out _))
+			{
+				return Enum.Parse(targetType, stringValue, true);
+			}
+			return Enum.ToObject(targetType, Convert.ChangeType(value, Enum.GetUnderlyingType(targetType)));
+		}
+
 		// For numeric types, use culture-aware conversion
-		if (IsNumericType(targetType) && value is string stringValue)
+		if (IsNumericType(targetType) && value is string)
 		{
 			return ConvertNumericString(stringValue, targetType);
 		}
@@ -91,35 +118,11 @@ public abstract class ModuleTwinBase
 	}
 
 	/// <summary>
-	/// Checks if the specified type is a numeric type.
-	/// </summary>
-	private bool IsNumericType(Type type)
-	{
-		return type == typeof(int) || type == typeof(long) || type == typeof(short) || type == typeof(byte) ||
-			   type == typeof(uint) || type == typeof(ulong) || type == typeof(ushort) || type == typeof(sbyte) ||
-			   type == typeof(double) || type == typeof(float) || type == typeof(decimal);
-	}
-
-	/// <summary>
 	/// Converts a string to a numeric type using Dutch culture.
 	/// </summary>
 	private object ConvertNumericString(string value, Type targetType)
 	{
-		return targetType.Name switch
-		{
-			nameof(Int32) => int.Parse(value, DutchCulture),
-			nameof(Int64) => long.Parse(value, DutchCulture),
-			nameof(Int16) => short.Parse(value, DutchCulture),
-			nameof(Byte) => byte.Parse(value, DutchCulture),
-			nameof(UInt32) => uint.Parse(value, DutchCulture),
-			nameof(UInt64) => ulong.Parse(value, DutchCulture),
-			nameof(UInt16) => ushort.Parse(value, DutchCulture),
-			nameof(SByte) => sbyte.Parse(value, DutchCulture),
-			nameof(Double) => double.Parse(value, DutchCulture),
-			nameof(Single) => float.Parse(value, DutchCulture),
-			nameof(Decimal) => decimal.Parse(value, DutchCulture),
-			_ => Convert.ChangeType(value, targetType, DutchCulture)
-		};
+		return Convert.ChangeType(value, targetType, DutchCulture);
 	}
 
 	/// <summary>
@@ -196,7 +199,7 @@ public abstract class ModuleTwinBase
 				// Check if the property is static by examining its getter method
 				var isStatic = prop.GetMethod?.IsStatic == true;
 				var instance = isStatic ? null : this;
-				var convertedValue = ConvertWithCulture(value, prop.PropertyType);
+				var convertedValue = ParseWithCulture(value, prop.PropertyType);
 				prop.SetValue(instance, convertedValue);
 			}
 		}

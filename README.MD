@@ -40,6 +40,7 @@ dotnet add package AutoIoTEdge
 
 3. Automatically construct your module twin by extending the `ModuleTwinBase` class. The variable names that match module
 twin settings will be set accordingly. 
+> The property must be public and have a setter. The setter will be used to set the value, so manupulating the value in the setter is supported.
 
 ```csharp
 public class ModuleTwin : ModuleTwinBase
@@ -47,6 +48,8 @@ public class ModuleTwin : ModuleTwinBase
 	public static string TestVariable { get; set; } = "DefaultString";
 }
 ```
+
+
 
 Your Module Twin in the azure portal should look like:
 ```json
