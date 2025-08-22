@@ -130,16 +130,3 @@ public class MyService
 	}
 }
 ```
-
-
-# How to update
-Use the following steps to update the library:
-1. Change the version number in the `AutoIoTEdge.csproj` file.
-1. Run the following command to pack the library:
-```bash
- dotnet pack -c Release 
-```
-3. Upload the package to NuGet using the following command:
-```bash
- dotnet nuget push bin/Release/AutoIoTEdge.<package-version>.nupkg --api-key YOUR_NUGET_API_KEY --source https://api.nuget.org/v3/index.json
-```
