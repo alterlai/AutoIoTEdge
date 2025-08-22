@@ -1,30 +1,45 @@
+name: Publish to NuGet
+
 on:
   push:
     tags:
-    - "v[0-9]+.[0-9]+.[0-9]+"
+      - 'v[0-9]+.[0-9]+.[0-9]+' # Trigger on version tags like v1.0.0
+
 jobs:
-  build:
+  build-and-publish:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write # Required to push to GitHub Packages if you choose to
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
-        fetch-depth: 0
+        fetch-depth: 0 # Fetches all history for git log
+
     - name: Verify commit exists in origin/main
       run: git branch --remote --contains | grep origin/main
-    - name: Extract release notes
-      run: |
-        git log --pretty=format:'%d %s' ${GITHUB_REF} | perl -pe 's| \(.*tag: v(\d+.\d+.\d+(-preview\d{3})?)(, .*?)*\)|\n## \1\n|g' > RELEASE-NOTES
+
     - name: Set VERSION variable from tag
-      run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore AutoIoTEdge/AutoIoTEdge.csproj
+
     - name: Build
-      run: dotnet build --configuration Release /p:Version=${VERSION}
+      run: dotnet build AutoIoTEdge/AutoIoTEdge.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-restore
+
     - name: Test
-      run: dotnet test --configuration Release /p:Version=${VERSION} --no-build
+      run: dotnet test --configuration Release /p:Version=${{ env.VERSION }} --no-build
+
     - name: Pack
-      run: dotnet pack --configuration Release /p:Version=${VERSION} --no-build --output .
-    - name: Push
-      run: dotnet nuget push NuGet.Workflow.${VERSION}.nupkg --source https://nuget.pkg.github.com/acraven/index.json --api-key ${GITHUB_TOKEN}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: dotnet pack AutoIoTEdge/AutoIoTEdge.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-build --output ./dist
+
+    - name: Push to NuGet.org
+      run: dotnet nuget push ./dist/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
