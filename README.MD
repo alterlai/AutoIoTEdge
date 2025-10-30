@@ -73,6 +73,9 @@ will overwrite values in `appsettings.json`. The JSON file should look like this
 }
 ```
 
+> [!IMPORTANT]
+> In Visual studio, right-click on appsettings.json -> properties -> Copy to output directory = "Copy always". This option will copy your appsettings to the build directory when building the project. If you forget this step, your appsettings will not apply.
+
 # Usage
 Use the service in your code by injecting it into your classes:
 ```csharp
