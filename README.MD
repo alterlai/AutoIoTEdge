@@ -40,6 +40,7 @@ dotnet add package AutoIoTEdge
 
 3. Automatically construct your module twin by extending the `ModuleTwinBase` class. The variable names that match module
 twin settings will be set accordingly. 
+> [!NOTE]
 > The property must be public and have a setter. The setter will be used to set the value, so manupulating the value in the setter is supported.
 
 ```csharp
