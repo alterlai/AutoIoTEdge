@@ -1,4 +1,4 @@
-﻿using AutoIoTEdge.Interfaces;
+﻿using AutoIoTEdge.Extensions;
 using AutoIoTEdge.Services;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
@@ -23,11 +23,11 @@ public class Program
 		if (isDevelopment)
 		{
 			builder.Services.Configure<ModuleTwin>(builder.Configuration.GetSection("ModuleTwin"));
-			builder.Services.AddSingleton<IIotEdgeService<ModuleTwin>, DummyIotService<ModuleTwin>>();
+			builder.Services.AddDummyIotEdgeService<ModuleTwin>();
 		}
 		else
 		{
-			builder.Services.AddSingleton<IIotEdgeService<ModuleTwin>>(sp => sp.GetRequiredService<IotEdgeService<ModuleTwin>>());
+			builder.Services.AddIotEdgeService<ModuleTwin>();
 		}
 
 		builder.Services.AddSingleton<App>();
