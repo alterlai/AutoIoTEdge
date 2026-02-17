@@ -1,6 +1,7 @@
 using AutoIoTEdge.Models;
 using AutoIoTEdge.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace AutoIoTEdge.Extensions;
 
@@ -11,7 +12,8 @@ public static class ServiceCollectionExtensions
 {
 	/// <summary>
 	/// Registers the IoT Edge service with the specified module twin type.
-	/// This allows you to inject IIotEdgeService without specifying the generic type parameter.
+	/// The service will automatically start when the application starts, ensuring module twin configuration
+	/// is loaded even if the service is never explicitly injected.
 	/// </summary>
 	/// <typeparam name="TTwin">The type of module twin that derives from ModuleTwinBase.</typeparam>
 	/// <param name="services">The service collection to add the service to.</param>
@@ -19,21 +21,25 @@ public static class ServiceCollectionExtensions
 	public static IServiceCollection AddIotEdgeService<TTwin>(this IServiceCollection services)
 		where TTwin : ModuleTwinBase, new()
 	{
-		// Register the generic version
+		// Register the concrete implementation as a singleton
 		services.AddSingleton<IotEdgeService<TTwin>>();
-		
-		// Register the non-generic version pointing to the same instance
+
+		// Register as a hosted service so it starts automatically
+		services.AddHostedService<IotEdgeService<TTwin>>(sp => sp.GetRequiredService<IotEdgeService<TTwin>>());
+
+		// Register the non-generic interface pointing to the same instance
 		services.AddSingleton<IIotEdgeService>(sp => sp.GetRequiredService<IotEdgeService<TTwin>>());
-		
+
 		// Also register the generic interface for consumers that want type-safe events
 		services.AddSingleton<IIotEdgeService<TTwin>>(sp => sp.GetRequiredService<IotEdgeService<TTwin>>());
-		
+
 		return services;
 	}
 
 	/// <summary>
 	/// Registers the Dummy IoT Edge service for development/testing with the specified module twin type.
-	/// This allows you to inject IIotEdgeService without specifying the generic type parameter.
+	/// The service will automatically start when the application starts, ensuring module twin configuration
+	/// is loaded even if the service is never explicitly injected.
 	/// </summary>
 	/// <typeparam name="TTwin">The type of module twin that derives from ModuleTwinBase.</typeparam>
 	/// <param name="services">The service collection to add the service to.</param>
@@ -41,15 +47,18 @@ public static class ServiceCollectionExtensions
 	public static IServiceCollection AddDummyIotEdgeService<TTwin>(this IServiceCollection services)
 		where TTwin : ModuleTwinBase, new()
 	{
-		// Register the generic version
+		// Register the concrete implementation as a singleton
 		services.AddSingleton<DummyIotService<TTwin>>();
-		
-		// Register the non-generic version pointing to the same instance
+
+		// Register as a hosted service so it starts automatically
+		services.AddHostedService<DummyIotService<TTwin>>(sp => sp.GetRequiredService<DummyIotService<TTwin>>());
+
+		// Register the non-generic interface pointing to the same instance
 		services.AddSingleton<IIotEdgeService>(sp => sp.GetRequiredService<DummyIotService<TTwin>>());
-		
+
 		// Also register the generic interface for consumers that want type-safe events
 		services.AddSingleton<IIotEdgeService<TTwin>>(sp => sp.GetRequiredService<DummyIotService<TTwin>>());
-		
+
 		return services;
 	}
 }
