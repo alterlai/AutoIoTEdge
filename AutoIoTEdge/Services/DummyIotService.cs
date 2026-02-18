@@ -1,6 +1,5 @@
 ﻿using AutoIoTEdge.Models;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text;
@@ -11,7 +10,7 @@ namespace AutoIoTEdge.Services
 	/// Dummy implementation of the IIotEdgeService interface for local debugging.
 	/// Implements IHostedService to ensure automatic initialization when the application starts.
 	/// </summary>
-	public class DummyIotService<TTwin> : IIotEdgeService<TTwin>, IHostedService
+	public class DummyIotService<TTwin> : IIotEdgeService<TTwin>
 		where TTwin : ModuleTwinBase
 	{
 		private TTwin _twin = null!;
@@ -23,29 +22,6 @@ namespace AutoIoTEdge.Services
 		{
 			_twin = twin.Value;
 			_logger = logger;
-		}
-
-		/// <summary>
-		/// Starts the dummy IoT Edge service.
-		/// This is called automatically by the hosting infrastructure.
-		/// </summary>
-		public Task StartAsync(CancellationToken cancellationToken)
-		{
-			_logger.LogInformation("DummyIotService: Starting service...");
-			// Trigger the ModuleTwinUpdated event to simulate twin initialization
-			ModuleTwinUpdated?.Invoke(this, _twin);
-			_logger.LogInformation("DummyIotService: Service started successfully.");
-			return Task.CompletedTask;
-		}
-
-		/// <summary>
-		/// Stops the dummy IoT Edge service.
-		/// This is called automatically by the hosting infrastructure during shutdown.
-		/// </summary>
-		public Task StopAsync(CancellationToken cancellationToken)
-		{
-			_logger.LogInformation("DummyIotService: Stopping service...");
-			return Task.CompletedTask;
 		}
 
 		public ModuleClient GetBaseModuleClient()
@@ -68,21 +44,23 @@ namespace AutoIoTEdge.Services
 
 		public Task SendEventAsync(string outputName, Message message)
 		{
-			string content = message.GetBytes() != null ?
-				Encoding.UTF8.GetString(message.GetBytes()) :
+			var bytecontent = message.GetBytes();
+			var stringcontent = bytecontent != null ?
+				Encoding.UTF8.GetString(bytecontent) :
 				"<empty>";
 
-			_logger.LogInformation($"DummyIotService: Sending message to output {outputName}. Content: {content}");
+			_logger.LogInformation($"DummyIotService: Sending message to output {outputName}. Content: {stringcontent}");
 			return Task.CompletedTask;
 		}
 
 		public Task SendEventAsync(string outputName, Message message, CancellationToken cancellationToken)
 		{
-			string content = message.GetBytes() != null ?
-				Encoding.UTF8.GetString(message.GetBytes()) :
+			var bytecontent = message.GetBytes();
+			var stringcontent = bytecontent != null ?
+				Encoding.UTF8.GetString(bytecontent) :
 				"<empty>";
 
-			_logger.LogInformation($"DummyIotService: Sending message to output {outputName} with cancellation token. Content: {content}");
+			_logger.LogInformation($"DummyIotService: Sending message to output {outputName} with cancellation token. Content: {stringcontent}");
 			return Task.CompletedTask;
 		}
 
