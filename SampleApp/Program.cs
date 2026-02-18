@@ -1,4 +1,4 @@
-﻿using AutoIoTEdge.Interfaces;
+﻿using AutoIoTEdge.Extensions;
 using AutoIoTEdge.Services;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
@@ -19,22 +19,31 @@ public class Program
 
 		var isDevelopment = builder.Environment.IsDevelopment();
 
-		// Register the services based on the environment
+		// Register the IoT Edge service based on the environment
+		// The service will automatically start when the host starts
 		if (isDevelopment)
 		{
 			builder.Services.Configure<ModuleTwin>(builder.Configuration.GetSection("ModuleTwin"));
-			builder.Services.AddSingleton<IIotEdgeService<ModuleTwin>, DummyIotService<ModuleTwin>>();
+			builder.Services.AddDummyIotEdgeService<ModuleTwin>();
 		}
 		else
 		{
-			builder.Services.AddSingleton<IIotEdgeService<ModuleTwin>>(sp => sp.GetRequiredService<IotEdgeService<ModuleTwin>>());
+			builder.Services.AddIotEdgeService<ModuleTwin>();
 		}
 
 		builder.Services.AddSingleton<App>();
 
 		using var host = builder.Build();
+
+		// Start the host - this triggers all hosted services to start (including IotEdgeService)
+		await host.StartAsync();
+
+		// Now the ModuleTwin is configured - run your app
 		var app = host.Services.GetRequiredService<App>();
 		await app.RunAsync();
+
+		// Keep the host running (optional - comment out if your app logic keeps running)
+		await host.WaitForShutdownAsync();
 	}
 }
 

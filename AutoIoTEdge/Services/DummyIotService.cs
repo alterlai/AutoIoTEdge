@@ -1,5 +1,6 @@
 ﻿using AutoIoTEdge.Models;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text;
@@ -7,9 +8,10 @@ using System.Text;
 namespace AutoIoTEdge.Services
 {
 	/// <summary>
-	/// Dummy implementation of the IIotEdgeService interface voor local debugging.
+	/// Dummy implementation of the IIotEdgeService interface for local debugging.
+	/// Implements IHostedService to ensure automatic initialization when the application starts.
 	/// </summary>
-	public class DummyIotService<TTwin> : IIotEdgeService<TTwin>
+	public class DummyIotService<TTwin> : IIotEdgeService<TTwin>, IHostedService
 		where TTwin : ModuleTwinBase
 	{
 		private TTwin _twin = null!;
@@ -21,6 +23,29 @@ namespace AutoIoTEdge.Services
 		{
 			_twin = twin.Value;
 			_logger = logger;
+		}
+
+		/// <summary>
+		/// Starts the dummy IoT Edge service.
+		/// This is called automatically by the hosting infrastructure.
+		/// </summary>
+		public Task StartAsync(CancellationToken cancellationToken)
+		{
+			_logger.LogInformation("DummyIotService: Starting service...");
+			// Trigger the ModuleTwinUpdated event to simulate twin initialization
+			ModuleTwinUpdated?.Invoke(this, _twin);
+			_logger.LogInformation("DummyIotService: Service started successfully.");
+			return Task.CompletedTask;
+		}
+
+		/// <summary>
+		/// Stops the dummy IoT Edge service.
+		/// This is called automatically by the hosting infrastructure during shutdown.
+		/// </summary>
+		public Task StopAsync(CancellationToken cancellationToken)
+		{
+			_logger.LogInformation("DummyIotService: Stopping service...");
+			return Task.CompletedTask;
 		}
 
 		public ModuleClient GetBaseModuleClient()
