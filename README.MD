@@ -7,8 +7,6 @@ This repository contains code for the IoT Edge boilerplate library. The goal of 
 - Construct module twin from a JSON if in development.
 - Provides the same functionality as the IoT Edge device library.
 - Provides an event subscription for module twin updates.
-- **Automatic service initialization** - module twin is configured even if you don't inject the service anywhere.
-- **Simplified dependency injection** - specify the module twin type only once during registration.
 
 ### Environments
 Environment is determined based on the `DOTNET_ENVIRONMENT` variable. If the variable is set to `Development`, 
@@ -21,15 +19,15 @@ it will use the IoT Edge service to read the module twin from the IoT Edge devic
 dotnet add package AutoIoTEdge
 ```
 
-2. Add the following code to your `Program.cs` file to register the IoT Edge library as a service:
+2. Add the following code to your `Program.cs` file to register the IoT edge library as a service:
 ```csharp
 using AutoIoTEdge.Extensions;
+using Microsoft.Extensions.Hosting;
 using SampleModule.Models;
 
 var builder = Host.CreateApplicationBuilder();
 
-// Register the IoT Edge service - it will start automatically!
-// You only need to specify the ModuleTwin type once here
+// Register the IoT Edge service - specify the ModuleTwin type once here
 if (builder.Environment.IsDevelopment())
 {
 	builder.Services.Configure<ModuleTwin>(builder.Configuration.GetSection("ModuleTwin"));
@@ -40,9 +38,22 @@ else
 	builder.Services.AddIotEdgeService<ModuleTwin>();
 }
 
-// The service is now registered and will start automatically when the host starts
-// Your ModuleTwin will be configured even if you never inject the service!
+// Register your app
+builder.Services.AddSingleton<App>();
+
+using var host = builder.Build();
+
+// Start the host to initialize the IoT Edge service
+await host.StartAsync();
+
+// Run your application logic
+var app = host.Services.GetRequiredService<App>();
+await app.RunAsync();
+
+// Keep the host running
+await host.WaitForShutdownAsync();
 ```
+> **Note:** You must call `await host.StartAsync()` to initialize the IoT Edge service and load the module twin configuration.
 
 3. Automatically construct your module twin by extending the `ModuleTwinBase` class. The variable names that match module
 twin settings will be set accordingly. 
@@ -55,7 +66,15 @@ public class ModuleTwin : ModuleTwinBase
 	public static string TestVariable { get; set; } = "DefaultString";
 	public static Position Position { get; set; } = new();
 }
+
+public class Position
+{
+	public double Latitude { get; set; }
+	public double Longitude { get; set; }
+}
 ```
+
+
 
 Your Module Twin in the Azure portal should look like:
 ```json
@@ -64,8 +83,8 @@ Your Module Twin in the Azure portal should look like:
 		"desired": {
 			"TestVariable": "NewValue",
 			"Position": {
-				"Latitude": 12.34,
-				"Longitude": 56.78
+				"Latitude": 52.3676,
+				"Longitude": 4.9041
 			}
 		}
 	}
@@ -91,16 +110,15 @@ will overwrite values in `appsettings.json`. The JSON file should look like this
 > In Visual studio, right-click on appsettings.json -> properties -> Copy to output directory = "Copy always". This option will copy your appsettings to the build directory when building the project. If you forget this step, your appsettings will not apply.
 
 # Usage
+The IoT Edge service starts automatically when your application starts, so your ModuleTwin is already configured and ready to use.
 
-## Option 1: Access ModuleTwin properties directly (No injection required!)
-Since the service starts automatically, your ModuleTwin is already configured. You can access static properties directly:
-
+**Option 1: Access ModuleTwin properties directly (no injection needed)**
 ```csharp
-public class MyApp
+public class App
 {
-	private readonly ILogger<MyApp> _logger;
+	private readonly ILogger<App> _logger;
 
-	public MyApp(ILogger<MyApp> logger)
+	public App(ILogger<App> logger)
 	{
 		_logger = logger;
 	}
@@ -110,96 +128,58 @@ public class MyApp
 		// ModuleTwin is already configured - just use it!
 		_logger.LogInformation($"TestVariable: {ModuleTwin.TestVariable}");
 		_logger.LogInformation($"Position: ({ModuleTwin.Position.Latitude}, {ModuleTwin.Position.Longitude})");
-
-		// Your application logic here...
 	}
 }
 ```
 
-## Option 2: Inject IIotEdgeService (when you need to call service methods)
-Use the non-generic interface - no need to specify the type parameter every time you inject it:
-
+**Option 2: Inject IIotEdgeService when you need to call service methods**
 ```csharp
+using AutoIoTEdge.Services;
+using Microsoft.Azure.Devices.Client;
+
 public class MyService
 {
 	private readonly IIotEdgeService _iotEdgeService;
-	private readonly ILogger<MyService> _logger;
 
-	public MyService(IIotEdgeService iotEdgeService, ILogger<MyService> logger)
+	// No need to specify <ModuleTwin> - just inject IIotEdgeService
+	public MyService(IIotEdgeService iotEdgeService)
 	{
 		_iotEdgeService = iotEdgeService;
-		_logger = logger;
-
-		// Subscribe to twin updates if needed (requires casting to generic interface)
-		if (iotEdgeService is IIotEdgeService<ModuleTwin> typedService)
-		{
-			typedService.ModuleTwinUpdated += OnTwinUpdated;
-		}
 	}
 
 	public async Task SendDataAsync()
 	{
-		// Use any IoT Edge service method
 		var message = new Message(Encoding.UTF8.GetBytes("Hello IoT Hub!"));
 		await _iotEdgeService.SendEventAsync("output1", message);
 	}
-
-	private void OnTwinUpdated(object? sender, ModuleTwin twin)
-	{
-		_logger.LogInformation($"Twin updated: {twin.TestVariable}");
-	}
 }
 ```
 
-## Option 3: Inject IIotEdgeService<ModuleTwin> (for strongly-typed events)
-If you prefer compile-time type safety for the ModuleTwinUpdated event:
-
+Respond to module twin updates by subscribing to the `ModuleTwinUpdated` event in your code:
 ```csharp
 public class MyService
 {
-	private readonly IIotEdgeService<ModuleTwin> _iotEdgeService;
+	private readonly IIotEdgeService _iotEdgeService;
 
-	public MyService(IIotEdgeService<ModuleTwin> iotEdgeService)
+	public MyService(IIotEdgeService iotEdgeService)
 	{
 		_iotEdgeService = iotEdgeService;
-		// Direct access to ModuleTwinUpdated event with type safety
-		_iotEdgeService.ModuleTwinUpdated += OnTwinUpdated;
+
+		// Subscribe to twin updates (requires casting to generic interface)
+		if (iotEdgeService is IIotEdgeService<ModuleTwin> typedService)
+		{
+			typedService.ModuleTwinUpdated += OnModuleTwinUpdated;
+		}
 	}
 
-	private void OnTwinUpdated(object? sender, ModuleTwin twin)
-	{
-		Console.WriteLine($"Twin updated: {twin.TestVariable}");
-	}
-}
-```
-
-# Key Benefits
-
-✅ **Automatic Initialization**: The service starts automatically when your application starts. No manual initialization required!
-
-✅ **Specify Type Once**: You only specify the `<ModuleTwin>` type parameter once during registration in `Program.cs`
-
-✅ **No Injection Required**: If you only need the ModuleTwin configured, you don't need to inject anything. Just access the static properties!
-
-✅ **Flexible Injection**: Inject `IIotEdgeService` (no generics) or `IIotEdgeService<ModuleTwin>` (type-safe events) based on your needs
-
-✅ **Same Instance**: All injection options resolve to the same singleton instance
-{
-	private readonly IIotEdgeService<ModuleTwin> _iotEdgeService;
-	public MyService(IIotEdgeService<ModuleTwin> iotEdgeService)
-	{
-		_iotEdgeService = iotEdgeService;
-		_iotEdgeService.ModuleTwinUpdated += OnModuleTwinUpdated;
-	}
-	private void OnModuleTwinUpdated(object sender, ModuleTwin twin)
+	private void OnModuleTwinUpdated(object? sender, ModuleTwin twin)
 	{
 		Console.WriteLine($"Module twin updated: {twin.TestVariable}");
 	}
 }
-
 ```
 
-In case you still want to use the base ModuleClient, you can call the `GetBaseModuleClient()` method on the IIoTEdgeService:
+Alternatively, inject `IIotEdgeService<ModuleTwin>` for direct access to the typed event:
 ```csharp
 public class MyService
 {
@@ -208,11 +188,33 @@ public class MyService
 	public MyService(IIotEdgeService<ModuleTwin> iotEdgeService)
 	{
 		_iotEdgeService = iotEdgeService;
+		// Direct access to ModuleTwinUpdated event
+		_iotEdgeService.ModuleTwinUpdated += OnModuleTwinUpdated;
 	}
+
+	private void OnModuleTwinUpdated(object? sender, ModuleTwin twin)
+	{
+		Console.WriteLine($"Module twin updated: {twin.TestVariable}");
+	}
+}
+```
+
+In case you still want to use the base ModuleClient, you can call the `GetBaseModuleClient()` method on the IIotEdgeService:
+```csharp
+public class MyService
+{
+	private readonly IIotEdgeService _iotEdgeService;
+
+	public MyService(IIotEdgeService iotEdgeService)
+	{
+		_iotEdgeService = iotEdgeService;
+	}
+
 	public async Task DoSomethingWithBaseClientAsync()
 	{
-		var client = await _iotEdgeService.GetBaseModuleClient();
+		var client = _iotEdgeService.GetBaseModuleClient();
 		// Use the base ModuleClient as needed
+		await client.SendEventAsync("customOutput", new Message(...));
 	}
 }
 ```
