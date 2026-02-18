@@ -3,19 +3,12 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Text;
 
 namespace AutoIoTEdge.Services;
-
-/// <summary>
-/// IoT Edge service implementation that manages module twin synchronization and IoT Hub communication.
-/// Implements IHostedService to ensure automatic initialization when the application starts.
-/// </summary>
-/// <typeparam name="TTwin">The type of module twin that derives from ModuleTwinBase.</typeparam>
-public class IotEdgeService<TTwin> : IIotEdgeService<TTwin>, IHostedService where TTwin : ModuleTwinBase, new()
+public class IotEdgeService<TTwin> : IIotEdgeService<TTwin> where TTwin : ModuleTwinBase, new()
 {
 	private readonly ILogger<IotEdgeService<TTwin>> _logger;
 	private readonly IConfiguration _configuration;
@@ -31,32 +24,13 @@ public class IotEdgeService<TTwin> : IIotEdgeService<TTwin>, IHostedService wher
 	{
 		_logger = logger;
 		_configuration = configuration;
+
+		StartInternalAsync().GetAwaiter().GetResult(); // Synchronous call to ensure the client is initialized before any method calls
 	}
 
-	/// <summary>
-	/// Starts the IoT Edge service and initializes the module client.
-	/// This is called automatically by the hosting infrastructure.
-	/// </summary>
-	/// <param name="cancellationToken">Cancellation token for the startup operation.</param>
-	/// <returns>A task that represents the asynchronous startup operation.</returns>
-	public async Task StartAsync(CancellationToken cancellationToken)
-	{
-		_logger.LogInformation("Starting IoT Edge Service...");
-		await StartInternalAsync();
-		_logger.LogInformation("IoT Edge Service started successfully.");
-	}
-
-	/// <summary>
-	/// Stops the IoT Edge service and disposes of the module client.
-	/// This is called automatically by the hosting infrastructure during shutdown.
-	/// </summary>
-	/// <param name="cancellationToken">Cancellation token for the shutdown operation.</param>
-	/// <returns>A task that represents the asynchronous shutdown operation.</returns>
 	public Task StopAsync(CancellationToken cancellationToken)
 	{
-		_logger.LogInformation("Stopping IoT Edge Service...");
 		_moduleClient?.Dispose();
-		_logger.LogInformation("IoT Edge Service stopped.");
 		return Task.CompletedTask;
 	}
 
