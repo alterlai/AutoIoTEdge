@@ -46,7 +46,8 @@ else
 
 3. Automatically construct your module twin by extending the `ModuleTwinBase` class. The variable names that match module
 twin settings will be set accordingly. 
-> The property must be public and have a setter. The setter will be used to set the value, so manipulating the value in the setter is supported.
+> [!NOTE]
+> The property must be public and have a setter. The setter will be used to set the value, so manupulating the value in the setter is supported.
 
 ```csharp
 public class ModuleTwin : ModuleTwinBase
@@ -85,6 +86,9 @@ will overwrite values in `appsettings.json`. The JSON file should look like this
 	}
 }
 ```
+
+> [!IMPORTANT]
+> In Visual studio, right-click on appsettings.json -> properties -> Copy to output directory = "Copy always". This option will copy your appsettings to the build directory when building the project. If you forget this step, your appsettings will not apply.
 
 # Usage
 
