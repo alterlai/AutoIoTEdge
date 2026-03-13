@@ -77,7 +77,7 @@ public class IotEdgeService<TTwin> : IIotEdgeService<TTwin> where TTwin : Module
 		_twin = new TTwin();
 		_twin.UpdateFromTwin(desiredProperties);
 
-		_logger.LogInformation($"{DateTime.UtcNow}: New twin: {JsonConvert.SerializeObject(_twin)}");
+		_logger.LogInformation($"{DateTime.UtcNow}: New twin: {_twin.ToTwinCollection().ToJson()}");
 
 		await _moduleClient.UpdateReportedPropertiesAsync(_twin.ToTwinCollection());
 		OnModuleTwinUpdated();

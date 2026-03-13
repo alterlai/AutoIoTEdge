@@ -385,6 +385,21 @@ public class ModuleTwinBaseTests
 	}
 
 	[Test]
+	public void ToTwinCollection_LogsStaticPropertiesInJson()
+	{
+		// Arrange
+		TestModuleTwin.StaticProperty = "IncludedStatic";
+
+		// Act
+		var twinCollection = _testTwin.ToTwinCollection();
+		var json = twinCollection.ToJson();
+
+		// Assert
+		Assert.That(json, Does.Contain("StaticProperty"));
+		Assert.That(json, Does.Contain("IncludedStatic"));
+	}
+
+	[Test]
 	public void ToTwinCollection_WithNullPropertyValues_IncludesNullValues()
 	{
 		// Arrange
